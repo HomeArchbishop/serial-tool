@@ -1,0 +1,8 @@
+.task/
+bin/
+/serial-tool
+*.dev.app/
+frontend/dist/
+frontend/node_modules/
+*.syso
+.DS_Store
