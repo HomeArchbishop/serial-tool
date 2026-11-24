@@ -27,5 +27,13 @@ tasks:
       - task: "{{.GOOS}}:run"
 
   dev:
+    deps:
+      - task: depth:helper
     cmds:
       - wails3 dev -config ./build/config.yml -port {{.VITE_PORT}}
+
+  depth:helper:
+    desc: Build the Orbbec depth helper and stage SDK runtime files in bin/
+    run: once
+    cmds:
+      - bash scripts/build-depth-helper.sh

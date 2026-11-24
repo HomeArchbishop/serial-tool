@@ -142,25 +142,36 @@ jobs:
           ditto -c -k --sequesterRsrc --keepParent "${APP_NAME}.app" "${{ matrix.artifact }}.zip"
           ls -la
 
-      - name: Build Windows exe
+      - name: Build Windows depth helper
         if: matrix.goos == 'windows'
         shell: bash
+        run: bash scripts/build-depth-helper.sh
+
+      - name: Build Windows exe
+        if: matrix.goos == 'windows'
+        shell: pwsh
         run: |
-          wails3 doctor || true
+          wails3 doctor
+          if ($LASTEXITCODE -ne 0) { Write-Host "doctor reported warnings" }
           wails3 task windows:build ARCH=amd64
-          test -f "bin/${APP_NAME}.exe"
-          # bash expands APP_NAME; do not use PowerShell $env: inside bash double-quotes
-          powershell.exe -NoProfile -Command \
-            "Compress-Archive -Path 'bin/${APP_NAME}.exe' -DestinationPath 'bin/${{ matrix.artifact }}.zip' -Force"
-          ls -la bin
+          if (!(Test-Path "bin/$env:APP_NAME.exe")) { throw "missing bin/$env:APP_NAME.exe" }
+          if (!(Test-Path "bin/orbbec-depth.exe")) { throw "missing depth helper" }
+          $files = @(
+            "bin/$env:APP_NAME.exe",
+            "bin/orbbec-depth.exe",
+            "bin/OrbbecSDKConfig_v1.0.xml"
+          ) + (Get-ChildItem "bin/*.dll").FullName
+          Compress-Archive -Path $files -DestinationPath "bin/${{ matrix.artifact }}.zip" -Force
+          Get-ChildItem bin
 
       - name: Build Linux binary
         if: matrix.goos == 'linux'
         run: |
           wails3 doctor || true
           wails3 task linux:build ARCH=amd64
+          test -x "bin/orbbec-depth"
           cd bin
-          tar -czf "${{ matrix.artifact }}.tar.gz" "${APP_NAME}"
+          tar -czf "${{ matrix.artifact }}.tar.gz"             "${APP_NAME}" orbbec-depth *.so* OrbbecSDKConfig_v1.0.xml
           ls -la
 
       - name: Upload artifact
