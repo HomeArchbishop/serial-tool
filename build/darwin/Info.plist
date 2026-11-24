@@ -25,5 +25,7 @@
             <true/>
         <key>NSHumanReadableCopyright</key>
             <string>© 2026 homearchbishop</string>
+        <key>NSCameraUsageDescription</key>
+            <string>serial-tool 需要访问相机，将画面推流到远程主机。</string>
     </dict>
 </plist>
