@@ -180,10 +180,42 @@ func buildSSHArgs(cfg TunnelConfig, remoteCmd string, extraSSH ...string) ([]str
 }
 
 func runSSH(cfg TunnelConfig, remoteCmd string) (string, error) {
-	args, err := buildSSHArgs(cfg, remoteCmd)
+	return runSSHOpts(cfg, remoteCmd)
+}
+
+func runSSHOpts(cfg TunnelConfig, remoteCmd string, extraSSH ...string) (string, error) {
+	args, err := buildSSHArgs(cfg, remoteCmd, extraSSH...)
 	if err != nil {
 		return "", err
 	}
 	out, err := exec.Command(args[0], args[1:]...).CombinedOutput()
 	return strings.TrimSpace(string(out)), err
+}
+
+// remoteSudo runs a remote command through sudo. The password, when needed, is
+// fed on stdin so it never appears in the local process arguments.
+func remoteSudo(cfg TunnelConfig, remoteCmd string) (string, error) {
+	return remoteSudoOpts(cfg, remoteCmd)
+}
+
+func remoteSudoOpts(cfg TunnelConfig, remoteCmd string, extraSSH ...string) (string, error) {
+	pass := cfg.SudoPassword
+	if pass == "" {
+		pass = cfg.Password
+	}
+	if pass != "" {
+		args, err := buildSSHArgs(cfg, "sudo -S -p '' "+remoteCmd, extraSSH...)
+		if err != nil {
+			return "", err
+		}
+		cmd := exec.Command(args[0], args[1:]...)
+		cmd.Stdin = strings.NewReader(pass + "\n")
+		out, err := cmd.CombinedOutput()
+		return strings.TrimSpace(string(out)), err
+	}
+
+	if out, err := runSSHOpts(cfg, "sudo -n true", extraSSH...); err != nil {
+		return out, ErrSudoPasswordRequired
+	}
+	return runSSHOpts(cfg, "sudo -n "+remoteCmd, extraSSH...)
 }

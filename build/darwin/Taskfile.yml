@@ -37,6 +37,7 @@ tasks:
           DEV:
             ref: .DEV
       - task: common:generate:icons
+      - task: :depth:helper
     preconditions:
       - sh: '{{if eq .OBFUSCATED "true"}}command -v garble >/dev/null 2>&1{{else}}true{{end}}'
         msg: "garble is required for obfuscated builds. Install it with: go install mvdan.cc/garble@v0.16.0 (requires Go 1.24+). See https://github.com/burrowers/garble/releases for version/toolchain compatibility."
@@ -166,6 +167,10 @@ tasks:
       - mkdir -p "{{.BIN_DIR}}/{{.APP_NAME}}.app/Contents/Resources"
       - cp build/darwin/icons.icns "{{.BIN_DIR}}/{{.APP_NAME}}.app/Contents/Resources/icons.icns"
       - cp "{{.BIN_DIR}}/{{.APP_NAME}}" "{{.BIN_DIR}}/{{.APP_NAME}}.app/Contents/MacOS"
+      - rm -f "{{.BIN_DIR}}/{{.APP_NAME}}.app/Contents/MacOS/orbbec-depth"
+      - cp "{{.BIN_DIR}}/orbbec-depth" "{{.BIN_DIR}}/{{.APP_NAME}}.app/Contents/MacOS"
+      - cp -a "{{.BIN_DIR}}"/*.dylib "{{.BIN_DIR}}/{{.APP_NAME}}.app/Contents/MacOS"
+      - cp "{{.BIN_DIR}}/OrbbecSDKConfig_v1.0.xml" "{{.BIN_DIR}}/{{.APP_NAME}}.app/Contents/MacOS"
       - cp build/darwin/Info.plist "{{.BIN_DIR}}/{{.APP_NAME}}.app/Contents"
       - task: '{{if eq OS "darwin"}}codesign:adhoc{{else}}codesign:skip{{end}}'
 
@@ -191,6 +196,10 @@ tasks:
       - mkdir -p "{{.BIN_DIR}}/{{.APP_NAME}}.dev.app/Contents/Resources"
       - cp build/darwin/icons.icns "{{.BIN_DIR}}/{{.APP_NAME}}.dev.app/Contents/Resources/icons.icns"
       - cp "{{.BIN_DIR}}/{{.APP_NAME}}" "{{.BIN_DIR}}/{{.APP_NAME}}.dev.app/Contents/MacOS"
+      - rm -f "{{.BIN_DIR}}/{{.APP_NAME}}.dev.app/Contents/MacOS/orbbec-depth"
+      - cp "{{.BIN_DIR}}/orbbec-depth" "{{.BIN_DIR}}/{{.APP_NAME}}.dev.app/Contents/MacOS"
+      - cp -a "{{.BIN_DIR}}"/*.dylib "{{.BIN_DIR}}/{{.APP_NAME}}.dev.app/Contents/MacOS"
+      - cp "{{.BIN_DIR}}/OrbbecSDKConfig_v1.0.xml" "{{.BIN_DIR}}/{{.APP_NAME}}.dev.app/Contents/MacOS"
       - cp "build/darwin/Info.dev.plist" "{{.BIN_DIR}}/{{.APP_NAME}}.dev.app/Contents/Info.plist"
       - xattr -cr "{{.BIN_DIR}}/{{.APP_NAME}}.dev.app"
       - codesign --force --deep --sign - "{{.BIN_DIR}}/{{.APP_NAME}}.dev.app"

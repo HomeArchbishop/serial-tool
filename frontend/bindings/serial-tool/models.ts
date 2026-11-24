@@ -8,6 +8,78 @@ export interface Activity {
     "message": string;
 }
 
+export interface CameraDevice {
+    "id": string;
+    "name": string;
+}
+
+export interface DepthCamera {
+    "id": string;
+    "name": string;
+    "serial": string;
+    "uid": string;
+    "pid": number;
+    "vid": number;
+    "connection": string;
+}
+
+export interface DepthListResult {
+    "devices": DepthCamera[] | null;
+    "error": string;
+}
+
+/**
+ * DeviceConfig is the persisted config of one user-added device. Kind decides
+ * which pipeline runs; both kinds share the SSH fields.
+ */
+export interface DeviceConfig {
+    "id": string;
+    "kind": string;
+    "label": string;
+    "host": string;
+    "user": string;
+    "password": string;
+    "identityFile": string;
+    "sshPort": number;
+    "sudoPassword": string;
+
+    /**
+     * Arm (serial tunnel).
+     */
+    "serialDevice": string;
+    "linkName": string;
+    "tunnelPort": number;
+
+    /**
+     * Camera (push stream).
+     */
+    "cameraModel": string;
+    "cameraId": string;
+    "cameraName": string;
+    "remoteDevice": string;
+    "port": number;
+    "width": number;
+    "height": number;
+    "fps": number;
+
+    /**
+     * Depth (Orbbec SDK over TCP).
+     */
+    "depthSerial": string;
+    "depthName": string;
+    "depthWidth": number;
+    "depthHeight": number;
+    "depthFps": number;
+    "depthPort": number;
+    "depthAlign": string;
+}
+
+export interface DeviceState {
+    "config": DeviceConfig;
+    "running": boolean;
+    "activity": Activity;
+}
+
 export interface SSHHost {
     "alias": string;
     "host": string;
@@ -21,16 +93,4 @@ export interface ToolStatus {
     "path": string;
     "hint": string;
     "message": string;
-}
-
-export interface TunnelConfig {
-    "device": string;
-    "host": string;
-    "user": string;
-    "password": string;
-    "identityFile": string;
-    "sshPort": number;
-    "tunnelPort": number;
-    "linkName": string;
-    "sudoPassword": string;
 }

@@ -22,11 +22,11 @@ var appIcon []byte
 func main() {
 	ensureUserPath()
 
-	tunnel := &TunnelService{}
+	devices := &DeviceService{}
 	var cleaned sync.Once
 	cleanup := func() {
 		cleaned.Do(func() {
-			tunnel.Cleanup()
+			devices.Cleanup()
 		})
 	}
 	defer cleanup()
@@ -35,7 +35,7 @@ func main() {
 		Name:        "serial-tool",
 		Description: "serial-tool",
 		Services: []application.Service{
-			application.NewService(tunnel),
+			application.NewService(devices),
 		},
 		Assets: application.AssetOptions{
 			Handler: application.AssetFileServerFS(assets),
@@ -56,7 +56,7 @@ func main() {
 	win := app.Window.NewWithOptions(application.WebviewWindowOptions{
 		Title:  "serial-tool",
 		Width:  380,
-		Height: 420,
+		Height: 520,
 		Mac: application.MacWindow{
 			Backdrop: application.MacBackdropNormal,
 			TitleBar: application.MacTitleBarHidden,
@@ -108,8 +108,8 @@ func main() {
 	menu.Add("显示窗口").OnClick(func(*application.Context) {
 		showWin()
 	})
-	menu.Add("停止隧道").OnClick(func(*application.Context) {
-		_ = tunnel.Stop()
+	menu.Add("停止全部设备").OnClick(func(*application.Context) {
+		devices.StopAll()
 	})
 	menu.AddSeparator()
 	menu.Add("退出").OnClick(func(*application.Context) {

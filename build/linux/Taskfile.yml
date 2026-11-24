@@ -37,6 +37,7 @@ tasks:
           DEV:
             ref: .DEV
       - task: common:generate:icons
+      - task: :depth:helper
     cmds:
       - '{{if eq .OBFUSCATED "true"}}garble {{.GARBLE_ARGS}} build{{else}}go build{{end}} {{.BUILD_FLAGS}} -o {{.OUTPUT}}'
     vars:
